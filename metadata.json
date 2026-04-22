@@ -1,0 +1,6 @@
+{
+  "name": "EduStream Pro",
+  "description": "A comprehensive cloud-based school management system for administrators, teachers, students, and parents, featuring AI-powered academic tools and real-time dashboards.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["AI Question Generation", "Real-time Dashboards", "ERP Financials", "Library Management"]
+}

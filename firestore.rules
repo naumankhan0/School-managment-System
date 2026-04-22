@@ -1,0 +1,109 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && getUserData().role == 'admin';
+    }
+
+    function isTeacher() {
+      return isSignedIn() && getUserData().role == 'teacher';
+    }
+
+    function isParent() {
+      return isSignedIn() && getUserData().role == 'parent';
+    }
+
+    function isStudent() {
+      return isSignedIn() && getUserData().role == 'student';
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation Helpers
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.role in ['admin', 'teacher', 'parent', 'student'] &&
+             data.email is string && data.email.size() <= 100;
+    }
+
+    // --- Collections ---
+
+    // 1. Users
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming());
+      allow update: if (isAdmin() || (request.auth.uid == userId)) && 
+                     isValidUser(incoming()) &&
+                     incoming().role == existing().role; // Role is immutable after creation for non-admins
+    }
+
+    // 2. Classes
+    match /classes/{classId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // 3. Subjects
+    match /subjects/{subjectId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // 4. Students
+    match /students/{studentId} {
+      allow read: if isSignedIn(); // Broad read for discovery, but sensitive info should be guarded if needed
+      allow write: if isAdmin();
+    }
+
+    // 5. Attendance
+    match /attendance/{attendanceId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdmin() || isTeacher();
+    }
+
+    // 6. Exams & Results
+    match /exams/{examId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /results/{resultId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdmin() || isTeacher();
+    }
+
+    // 7. Fee Chalans
+    match /feeChalans/{chalanId} {
+      allow read: if isAdmin() || 
+                   (isParent() && get(/databases/$(database)/documents/students/$(existing().studentId)).data.parentId == request.auth.uid) ||
+                   (isStudent() && existing().studentId == request.auth.uid);
+      allow write: if isAdmin();
+    }
+
+    // 8. Library
+    match /library/{bookId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

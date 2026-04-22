@@ -1,0 +1,163 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User profile with role-based access information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "teacher", "parent", "student"] },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "metadata": { "type": "object" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Class": {
+      "title": "School Class",
+      "description": "Information about academic classes.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "numeric": { "type": "number" },
+        "sections": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Subject": {
+      "title": "Subject",
+      "description": "Academic subjects assigned to classes.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "classId": { "type": "string" },
+        "teacherId": { "type": "string" }
+      }
+    },
+    "Student": {
+      "title": "Student Details",
+      "description": "Extended student information linked to User.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "admissionNo": { "type": "string" },
+        "rollNo": { "type": "string" },
+        "classId": { "type": "string" },
+        "section": { "type": "string" },
+        "parentId": { "type": "string" },
+        "house": { "type": "string" },
+        "club": { "type": "string" }
+      }
+    },
+    "Attendance": {
+      "title": "Attendance record",
+      "description": "Daily attendance for students or teachers.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "type": { "type": "string", "enum": ["student", "teacher"] },
+        "refId": { "type": "string" },
+        "status": { "type": "string", "enum": ["present", "absent", "late", "half_day"] },
+        "markedBy": { "type": "string" }
+      }
+    },
+    "Exam": {
+      "title": "Examination",
+      "description": "Examination schedule and details.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string" },
+        "classId": { "type": "string" },
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" }
+      }
+    },
+    "Result": {
+      "title": "Exam Result",
+      "description": "Student exam scores.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "examId": { "type": "string" },
+        "studentId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "score": { "type": "number" },
+        "total": { "type": "number" },
+        "grade": { "type": "string" }
+      }
+    },
+    "FeeChalan": {
+      "title": "Fee Chalan",
+      "description": "Bank fee chalan for students.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "amount": { "type": "number" },
+        "dueDate": { "type": "string", "format": "date" },
+        "status": { "type": "string", "enum": ["pending", "paid", "overdue"] },
+        "month": { "type": "string" }
+      }
+    },
+    "LibraryBook": {
+      "title": "Library Book",
+      "description": "Catalog of books in the library.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "author": { "type": "string" },
+        "category": { "type": "string" },
+        "quantity": { "type": "number" },
+        "available": { "type": "number" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/classes/{classId}": {
+      "schema": "Class",
+      "description": "Class structures"
+    },
+    "/subjects/{subjectId}": {
+      "schema": "Subject",
+      "description": "Academic subjects"
+    },
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Student details"
+    },
+    "/attendance/{attendanceId}": {
+      "schema": "Attendance",
+      "description": "Attendance logs"
+    },
+    "/exams/{examId}": {
+      "schema": "Exam",
+      "description": "Examination metadata"
+    },
+    "/results/{resultId}": {
+      "schema": "Result",
+      "description": "Student results"
+    },
+    "/feeChalans/{chalanId}": {
+      "schema": "FeeChalan",
+      "description": "Billing records"
+    },
+    "/library/{bookId}": {
+      "schema": "LibraryBook",
+      "description": "Library inventory"
+    }
+  }
+}
